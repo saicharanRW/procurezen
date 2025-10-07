@@ -1,27 +1,34 @@
 import { NextResponse } from "next/server"
+import { getJson } from "serpapi"
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const q = searchParams.get("q") || "copper wire"
 
-  // Mocked response (single item) based on the requested query
-  const data = {
-    position: 21,
-    asin: "B000BP7WH8",
-    title: "The Hillman Group 123127 16 Gauge Copper Wire, 25-Feet, 1-Pack",
-    link: "https://www.amazon.com/Hillman-Group-123127-Copper-25-Feet/dp/B000BP7WH8/",
-    thumbnail: "https://m.media-amazon.com/images/I/711ate6eFjL._AC_UY218_.jpg",
-    rating: 4.7,
-    reviews: 520,
-    bought_last_month: "50+ bought in past month",
-    price: "$9.49",
-    price_unit: "$0.38/feet",
-    offers: ["Save more with Subscribe & Save"],
-    delivery: ["FREE delivery Sat, Oct 11 on $35 of items shipped by Amazon", "Or fastest delivery Tomorrow, Oct 7"],
-    more_buying_choices: "$8.69 (11 new offers)",
-    more_buying_choices_link: "https://www.amazon.com/gp/offer-listing/B000BP7WH8/",
-    query: q,
-  }
+  try {
+    const params = {
+      "engine": "amazon",
+      "k": q,
+      "amazon_domain": "amazon.in",
+      "api_key": "e5a71b0aba626e458a164fc248dd166c7158f94d1886958f9a7a3458befb64aa"
+    }
 
-  return NextResponse.json(data)
+    return new Promise((resolve) => {
+      getJson(params, (json) => {
+        const organic_results = json.organic_results || []
+        
+        // Return the top 3 results
+        const topResults = organic_results.slice(0, 3)
+        
+        if (topResults.length === 0) {
+          resolve(NextResponse.json({ error: "No results found" }, { status: 404 }))
+        } else {
+          resolve(NextResponse.json(topResults))
+        }
+      })
+    })
+  } catch (error) {
+    console.error("SerpAPI error:", error)
+    return NextResponse.json({ error: "Failed to fetch search results" }, { status: 500 })
+  }
 }

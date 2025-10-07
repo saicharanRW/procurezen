@@ -26,13 +26,18 @@ type Product = {
   query?: string
 }
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json() as Promise<Product>)
+const fetcher = (url: string) => fetch(url).then((r) => {
+  if (!r.ok) {
+    throw new Error(`HTTP error! status: ${r.status}`)
+  }
+  return r.json() as Promise<Product[]>
+})
 
 export function SearchSection() {
   const [input, setInput] = useState("")
   const [query, setQuery] = useState<string | null>(null)
 
-  const { data, isLoading, error } = useSWR<Product>(
+  const { data, isLoading, error } = useSWR<Product[]>(
     () => (query ? `/api/search?q=${encodeURIComponent(query)}` : null),
     fetcher,
     { revalidateOnFocus: false },
@@ -65,7 +70,13 @@ export function SearchSection() {
       <div className="mt-6">
         {isLoading && query && <div className="text-center text-sm text-muted-foreground">Loading results…</div>}
         {error && <div className="text-center text-sm text-destructive">Something went wrong. Please try again.</div>}
-        {data && <ProductCard product={data} />}
+        {data && (
+          <div className="flex flex-col gap-4">
+            {data.map((product, index) => (
+              <ProductCard key={product.asin || index} product={product} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   )
