@@ -13,7 +13,7 @@ export async function GET(request: Request) {
       "api_key": "e5a71b0aba626e458a164fc248dd166c7158f94d1886958f9a7a3458befb64aa"
     }
 
-    return new Promise((resolve) => {
+    return new Promise<NextResponse>((resolve) => {
       getJson(params, (json) => {
         const organic_results = json.organic_results || []
         
