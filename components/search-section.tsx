@@ -55,7 +55,7 @@ export function SearchSection() {
       <form
         onSubmit={onSubmit}
         className="mx-auto flex w-full max-w-2xl items-center gap-2 rounded-lg border bg-card p-2 shadow-sm"
-        aria-label="Amazon Product Search"
+        aria-label="Product Search"
       >
         <Input
           value={input}
